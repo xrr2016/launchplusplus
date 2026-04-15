@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
-import { NButton, NCard, NInput, NInputNumber, NSpace, NTable } from "naive-ui";
+import { NButton, NCard, NInput, NInputNumber, NSpace, NTable, NUpload } from "naive-ui";
 import { reactive, ref } from "vue";
 
 const itemsStore = useItemsStore();
@@ -98,14 +98,9 @@ function noSideSpace(value: string) {
           placeholder="启动项名称"
         />
 
-        <n-input
-          v-model:value="editingItem.target"
-          class="input w-110"
-          type="text"
-          @change="handleChange"
-          :default-value="item.target"
-          placeholder="启动项目标"
-        />
+        <n-upload ref="uploadRef" :default-upload="false" @change="handleChange">
+          <n-button>选择文件</n-button>
+        </n-upload>
 
         <n-input-number
           class="input w-72"
