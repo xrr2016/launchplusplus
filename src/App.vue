@@ -1,55 +1,18 @@
 <script setup lang="ts">
+import { useItemsStore } from "@/stores/items";
 import { NButton, NSpace, NTable } from "naive-ui";
-import { ref } from "vue";
+import { computed } from "vue";
 
-interface StartupItem {
-  name: string;
-  path: string;
-  order: number;
-  delay: number;
-}
-
-const startupItems = ref<StartupItem[]>([
-  {
-    name: "QQ",
-    path: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
-    order: 1,
-    delay: 3,
-  },
-  {
-    name: "WeChat",
-    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
-    order: 2,
-    delay: 4,
-  },
-  {
-    name: "WeChat",
-    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
-    order: 3,
-    delay: 5,
-  },
-  {
-    name: "WeChat",
-    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
-    order: 4,
-    delay: 6,
-  },
-  {
-    name: "WeChat",
-    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
-    order: 5,
-    delay: 7,
-  },
-  {
-    name: "WeChat",
-    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
-    order: 6,
-    delay: 8,
-  },
-]);
+const itemsStore = useItemsStore();
+const startupItems = computed(() => itemsStore.items);
 
 function addStartupItem() {
-  console.log("添加启动项");
+  itemsStore.addItem({
+    name: "新启动项",
+    target: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
+    order: 1,
+    delay: 3,
+  });
 }
 
 async function useConfig() {
@@ -89,13 +52,15 @@ async function restartComputer() {
       <tbody class="table-body">
         <tr v-for="item in startupItems" class="table-row" :key="item.name">
           <td>{{ item.name }}</td>
-          <td>{{ item.path }}</td>
+          <td>{{ item.target }}</td>
           <td>{{ item.order }}</td>
           <td>{{ item.delay }}秒</td>
           <td>
             <n-space :size="4">
               <n-button size="tiny" quaternary type="info">编辑</n-button>
-              <n-button size="tiny" quaternary type="error">删除</n-button>
+              <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+                >删除</n-button
+              >
             </n-space>
           </td>
         </tr>

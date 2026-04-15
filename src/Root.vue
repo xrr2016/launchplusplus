@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { useAppStore } from "@/stores/app";
+import { useItemsStore } from "@/stores/items";
 import { onMounted } from "vue";
 import App from "./App.vue";
-import { useAppStore } from "./stores/app";
 
 const appStore = useAppStore();
+const itemsStore = useItemsStore();
 
 onMounted(async () => {
   await appStore.$tauri.start();
+  await itemsStore.$tauri.start();
 });
 </script>
 
