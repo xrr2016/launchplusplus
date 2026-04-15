@@ -3,6 +3,8 @@ import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
+
+import { reboot } from "tauri-plugin-power-manager-api";
 import { reactive, ref } from "vue";
 
 const message = useMessage();
@@ -103,15 +105,21 @@ async function deleteConfig() {
   }
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function restartComputer() {
-  console.log("重启电脑");
+  message.success("5 秒后重启电脑");
+  await sleep(5000);
+  await reboot();
 }
 
-const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value);
+// const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value);
 
-function noSideSpace(value: string) {
-  return !value.startsWith(" ") && !value.endsWith(" ");
-}
+// function noSideSpace(value: string) {
+//   return !value.startsWith(" ") && !value.endsWith(" ");
+// }
 </script>
 
 <template>
