@@ -1,34 +1,45 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
-import { NButton, NCard, NInput, NSpace, NTable } from "naive-ui";
-import { ref } from "vue";
+import { NButton, NCard, NInput, NInputNumber, NSpace, NTable } from "naive-ui";
+import { reactive, ref } from "vue";
 
 const itemsStore = useItemsStore();
-const editingItem = ref<StartupItem | null>(null);
+const editingIndex = ref<number>(-1);
+const editingItem = reactive<StartupItem>({
+  name: "",
+  target: "",
+  delay: 5,
+  order: 0,
+});
 
 function addStartupItem() {
   itemsStore.addItem({
     name: "新启动项",
     target: "",
     delay: 5,
-    editing: false,
     order: itemsStore.items.length + 1,
   });
 }
 
 function editItem(item: StartupItem) {
-  item.editing = true;
-  editingItem.value = item;
-  console.log(editingItem.value);
+  editingIndex.value = itemsStore.items.indexOf(item);
+  editingItem.name = item.name;
+  editingItem.delay = item.delay;
+  editingItem.order = item.order;
+  editingItem.target = item.target;
+  console.log(editingIndex.value, editingItem);
 }
 
-function saveItem(item: StartupItem) {
-  if (!editingItem.value) {
-    return;
-  }
+function saveItem() {
+  console.log(editingItem);
+  itemsStore.items[editingIndex.value] = {
+    ...editingItem,
+  };
+  editingIndex.value = -1;
+}
 
-  console.log(editingItem.value);
-  item.editing = false;
+function handleChange() {
+  console.log(editingItem);
 }
 
 async function useConfig() {
@@ -74,39 +85,46 @@ function noSideSpace(value: string) {
     </n-table>
 
     <n-card v-for="item in itemsStore.items" :key="item.name">
-      <div v-if="item.editing && editingItem === item" class="card-row">
+      <div
+        v-if="editingIndex > -1 && editingIndex === itemsStore.items.indexOf(item)"
+        class="card-row"
+      >
         <n-input
           class="input w-72"
-          :default-value="item.name"
-          v-model="editingItem!.name"
+          v-model:value="editingItem.name"
           type="text"
+          @input="handleChange"
+          :default-value="item.name"
           placeholder="启动项名称"
         />
 
         <n-input
+          v-model:value="editingItem.target"
           class="input w-110"
-          :default-value="item.target"
-          v-model="editingItem!.target"
           type="text"
+          @change="handleChange"
+          :default-value="item.target"
+          placeholder="启动项目标"
         />
 
-        <n-input
-          :default-value="item.order.toString()"
+        <n-input-number
           class="input w-72"
-          type="text"
+          v-model:value="editingItem.order"
+          :default-value="item.order"
+          clearable
           placeholder="启动顺序"
         />
 
-        <n-input
-          :default-value="item.delay.toString()"
-          v-model="item.delay"
+        <n-input-number
           class="input w-72"
-          type="text"
+          v-model:value="editingItem.delay"
+          :default-value="item.delay"
+          clearable
           placeholder="启动延迟"
         />
 
         <n-space :size="4">
-          <n-button size="tiny" quaternary type="success" @click="saveItem(item)">保存</n-button>
+          <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
 
           <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
             >删除</n-button

@@ -6,7 +6,6 @@ export interface StartupItem {
   order: number;
   delay: number;
   target: string;
-  editing: boolean;
 }
 
 export const useItemsStore = defineStore("items", () => {
@@ -16,7 +15,6 @@ export const useItemsStore = defineStore("items", () => {
       target: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
       order: 1,
       delay: 3,
-      editing: false,
     },
   ]);
 
