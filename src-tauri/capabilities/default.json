@@ -7,6 +7,17 @@
     "core:default",
     "opener:default",
     "dialog:default",
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "fs:default",
+    "fs:allow-write",
+    "fs:allow-write-text-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$HOME/*" },
+        { "path": "$APPDATA/**" },
+        { "path": "$LOCALAPPDATA/**" }
+      ]
+    }
   ]
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app";
 import { useItemsStore } from "@/stores/items";
+import { NConfigProvider, NMessageProvider } from "naive-ui";
 import { onMounted } from "vue";
 import App from "./App.vue";
 

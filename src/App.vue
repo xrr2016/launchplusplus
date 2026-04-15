@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
-import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable } from "naive-ui";
+import { open } from "@tauri-apps/plugin-dialog";
+import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
 import { reactive, ref } from "vue";
 
-import { open } from "@tauri-apps/plugin-dialog";
+const message = useMessage();
 
 async function openFileDialog() {
   const file = await open({
@@ -13,7 +15,7 @@ async function openFileDialog() {
   console.log(file);
 
   if (file) {
-    editingItem.target = file;
+    editingItem.path = file;
   }
 }
 
@@ -21,7 +23,7 @@ const itemsStore = useItemsStore();
 const editingIndex = ref<number>(-1);
 const editingItem = reactive<StartupItem>({
   name: "",
-  target: "",
+  path: "",
   delay: 5,
   order: 0,
 });
@@ -29,7 +31,7 @@ const editingItem = reactive<StartupItem>({
 function addStartupItem() {
   itemsStore.addItem({
     name: "新启动项",
-    target: "",
+    path: "",
     delay: 5,
     order: itemsStore.items.length + 1,
   });
@@ -40,7 +42,7 @@ function editItem(item: StartupItem) {
   editingItem.name = item.name;
   editingItem.delay = item.delay;
   editingItem.order = item.order;
-  editingItem.target = item.target;
+  editingItem.path = item.path;
   console.log(editingIndex.value, editingItem);
 }
 
@@ -57,7 +59,33 @@ function handleChange() {
 }
 
 async function useConfig() {
-  console.log("使用配置");
+  try {
+    const sortedItems = [...itemsStore.items].sort((a, b) => a.order - b.order);
+
+    let batchContent = "@echo off\n";
+    for (const item of sortedItems) {
+      if (item.path && item.delay > 0) {
+        batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
+        batchContent += `start "" "${item.path}"\n`;
+      } else if (item.path) {
+        batchContent += `start "" "${item.path}"\n`;
+      }
+    }
+    batchContent += `exit\n`;
+
+    // \Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+    const startupPath =
+      "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
+    console.log(batchContent, startupPath);
+
+    await writeTextFile(startupPath, batchContent, {
+      baseDir: BaseDirectory.Home,
+    });
+    message.success("配置已应用到启动文件夹");
+  } catch (error) {
+    message.error(`应用配置失败: ${error}`);
+    console.error(error);
+  }
 }
 
 async function deleteConfig() {
@@ -112,9 +140,9 @@ function noSideSpace(value: string) {
           placeholder="启动项名称"
         />
 
-        <div v-if="editingItem.target">
-          {{ editingItem.target }}
-          <n-button size="tiny" ghost @click="editingItem.target = ''">
+        <div v-if="editingItem.path">
+          {{ editingItem.path }}
+          <n-button size="tiny" ghost @click="editingItem.path = ''">
             <n-icon>x</n-icon>
           </n-button>
         </div>
@@ -139,19 +167,19 @@ function noSideSpace(value: string) {
         <n-space :size="4">
           <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
 
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item.name)"
             >删除</n-button
           >
         </n-space>
       </div>
       <div v-else class="card-row">
         <div>{{ item.name }}</div>
-        <div>{{ item.target }}</div>
+        <div>{{ item.path }}</div>
         <div>{{ item.order }}</div>
         <div>{{ item.delay }}秒</div>
         <n-space :size="4">
           <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item.name)"
             >删除</n-button
           >
         </n-space>

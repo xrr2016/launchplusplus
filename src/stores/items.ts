@@ -3,18 +3,24 @@ import { ref } from "vue";
 
 export interface StartupItem {
   name: string;
+  path: string;
   order: number;
   delay: number;
-  target: string;
 }
 
 export const useItemsStore = defineStore("items", () => {
   const items = ref<StartupItem[]>([
     {
       name: "QQ",
-      target: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
+      path: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
       order: 1,
       delay: 3,
+    },
+    {
+      name: "WeChat",
+      path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
+      order: 2,
+      delay: 4,
     },
   ]);
 
@@ -22,8 +28,11 @@ export const useItemsStore = defineStore("items", () => {
     items.value.push(item);
   }
 
-  function removeItem(item: StartupItem) {
-    items.value = items.value.filter((i) => i !== item);
+  function removeItem(name: string) {
+    const index = items.value.findIndex((i) => i.name === name);
+    if (index !== -1) {
+      items.value.splice(index, 1);
+    }
   }
 
   return { items, addItem, removeItem };
