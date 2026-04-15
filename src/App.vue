@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
-import { NButton, NCard, NSpace, NTable } from "naive-ui";
+import { NButton, NCard, NInput, NSpace, NTable } from "naive-ui";
 import { ref } from "vue";
 
 const itemsStore = useItemsStore();
@@ -76,7 +76,7 @@ function noSideSpace(value: string) {
     <n-card v-for="item in itemsStore.items" :key="item.name">
       <div v-if="item.editing && editingItem === item" class="card-row">
         <n-input
-          class="input"
+          class="input w-72"
           :default-value="item.name"
           v-model="editingItem!.name"
           type="text"
@@ -84,7 +84,7 @@ function noSideSpace(value: string) {
         />
 
         <n-input
-          class="input"
+          class="input w-110"
           :default-value="item.target"
           v-model="editingItem!.target"
           type="text"
@@ -166,16 +166,12 @@ function noSideSpace(value: string) {
   align-items: center;
 }
 
-.input {
-  background-color: aquamarine;
-}
-
 .w-110 {
-  width: 110px;
+  width: 110px !important;
 }
 
 .w-72 {
-  width: 72px;
+  width: 72px !important;
 }
 
 @media (prefers-color-scheme: dark) {
