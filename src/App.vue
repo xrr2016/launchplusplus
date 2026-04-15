@@ -22,6 +22,30 @@ const startupItems = ref<StartupItem[]>([
     order: 2,
     delay: 4,
   },
+  {
+    name: "WeChat",
+    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
+    order: 3,
+    delay: 5,
+  },
+  {
+    name: "WeChat",
+    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
+    order: 4,
+    delay: 6,
+  },
+  {
+    name: "WeChat",
+    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
+    order: 5,
+    delay: 7,
+  },
+  {
+    name: "WeChat",
+    path: "C:\\Program Files\\Tencent\\WeChat\\WeChat.exe",
+    order: 6,
+    delay: 8,
+  },
 ]);
 
 function addStartupItem() {
@@ -52,7 +76,7 @@ async function restartComputer() {
     </n-space>
   </header>
   <main class="container">
-    <n-table>
+    <n-table class="table" striped>
       <thead>
         <tr>
           <th>启动项</th>
@@ -62,17 +86,16 @@ async function restartComputer() {
           <th>操作</th>
         </tr>
       </thead>
-
-      <tbody>
-        <tr v-for="item in startupItems" :key="item.name">
+      <tbody class="table-body">
+        <tr v-for="item in startupItems" class="table-row" :key="item.name">
           <td>{{ item.name }}</td>
           <td>{{ item.path }}</td>
           <td>{{ item.order }}</td>
           <td>{{ item.delay }}秒</td>
           <td>
             <n-space :size="4">
-              <n-button size="tiny" ghost type="primary">编辑</n-button>
-              <n-button size="tiny" ghost type="warning">删除</n-button>
+              <n-button size="tiny" quaternary type="info">编辑</n-button>
+              <n-button size="tiny" quaternary type="error">删除</n-button>
             </n-space>
           </td>
         </tr>
@@ -107,8 +130,9 @@ async function restartComputer() {
 }
 
 .container {
-  margin: 0;
-  margin-top: 12px;
+  padding: 12px 0;
+  overflow: hidden auto;
+  /* height: calc(100vh - 28px); */
 }
 
 @media (prefers-color-scheme: dark) {
