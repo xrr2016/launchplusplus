@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
 import { reactive, ref } from "vue";
 
@@ -89,7 +89,18 @@ async function useConfig() {
 }
 
 async function deleteConfig() {
-  console.log("删除配置");
+  try {
+    const startupPath =
+      "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
+
+    await remove(startupPath, {
+      baseDir: BaseDirectory.Home,
+    });
+    message.success("配置已删除");
+  } catch (error) {
+    message.error(`删除配置失败: ${error}`);
+    console.error(error);
+  }
 }
 
 async function restartComputer() {

@@ -10,14 +10,11 @@
     "dialog:allow-open",
     "fs:default",
     "fs:allow-write",
+    "fs:allow-remove",
     "fs:allow-write-text-file",
     {
       "identifier": "fs:scope",
-      "allow": [
-        { "path": "$HOME/*" },
-        { "path": "$APPDATA/**" },
-        { "path": "$LOCALAPPDATA/**" }
-      ]
+      "allow": [{ "path": "$HOME/**" }]
     }
   ]
 }
