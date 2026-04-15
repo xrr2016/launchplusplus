@@ -1,18 +1,34 @@
 <script setup lang="ts">
-import { useItemsStore } from "@/stores/items";
-import { NButton, NSpace, NTable } from "naive-ui";
-import { computed } from "vue";
+import { useItemsStore, type StartupItem } from "@/stores/items";
+import { NButton, NCard, NSpace, NTable } from "naive-ui";
+import { ref } from "vue";
 
 const itemsStore = useItemsStore();
-const startupItems = computed(() => itemsStore.items);
+const editingItem = ref<StartupItem | null>(null);
 
 function addStartupItem() {
   itemsStore.addItem({
     name: "新启动项",
-    target: "C:\\Program Files\\Tencent\\QQ\\QQ.exe",
-    order: 1,
-    delay: 3,
+    target: "",
+    delay: 5,
+    editing: false,
+    order: itemsStore.items.length + 1,
   });
+}
+
+function editItem(item: StartupItem) {
+  item.editing = true;
+  editingItem.value = item;
+  console.log(editingItem.value);
+}
+
+function saveItem(item: StartupItem) {
+  if (!editingItem.value) {
+    return;
+  }
+
+  console.log(editingItem.value);
+  item.editing = false;
 }
 
 async function useConfig() {
@@ -25,6 +41,12 @@ async function deleteConfig() {
 
 async function restartComputer() {
   console.log("重启电脑");
+}
+
+const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value);
+
+function noSideSpace(value: string) {
+  return !value.startsWith(" ") && !value.endsWith(" ");
 }
 </script>
 
@@ -39,7 +61,7 @@ async function restartComputer() {
     </n-space>
   </header>
   <main class="container">
-    <n-table class="table" striped>
+    <n-table>
       <thead>
         <tr>
           <th>启动项</th>
@@ -49,23 +71,61 @@ async function restartComputer() {
           <th>操作</th>
         </tr>
       </thead>
-      <tbody class="table-body">
-        <tr v-for="item in startupItems" class="table-row" :key="item.name">
-          <td>{{ item.name }}</td>
-          <td>{{ item.target }}</td>
-          <td>{{ item.order }}</td>
-          <td>{{ item.delay }}秒</td>
-          <td>
-            <n-space :size="4">
-              <n-button size="tiny" quaternary type="info">编辑</n-button>
-              <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
-                >删除</n-button
-              >
-            </n-space>
-          </td>
-        </tr>
-      </tbody>
     </n-table>
+
+    <n-card v-for="item in itemsStore.items" :key="item.name">
+      <div v-if="item.editing && editingItem === item" class="card-row">
+        <n-input
+          class="input"
+          :default-value="item.name"
+          v-model="editingItem!.name"
+          type="text"
+          placeholder="启动项名称"
+        />
+
+        <n-input
+          class="input"
+          :default-value="item.target"
+          v-model="editingItem!.target"
+          type="text"
+        />
+
+        <n-input
+          :default-value="item.order.toString()"
+          class="input w-72"
+          type="text"
+          placeholder="启动顺序"
+        />
+
+        <n-input
+          :default-value="item.delay.toString()"
+          v-model="item.delay"
+          class="input w-72"
+          type="text"
+          placeholder="启动延迟"
+        />
+
+        <n-space :size="4">
+          <n-button size="tiny" quaternary type="success" @click="saveItem(item)">保存</n-button>
+
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+            >删除</n-button
+          >
+        </n-space>
+      </div>
+      <div v-else class="card-row">
+        <div>{{ item.name }}</div>
+        <div>{{ item.target }}</div>
+        <div>{{ item.order }}</div>
+        <div>{{ item.delay }}秒</div>
+        <n-space :size="4">
+          <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+            >删除</n-button
+          >
+        </n-space>
+      </div>
+    </n-card>
   </main>
 </template>
 
@@ -97,7 +157,25 @@ async function restartComputer() {
 .container {
   padding: 12px 0;
   overflow: hidden auto;
-  /* height: calc(100vh - 28px); */
+}
+
+.card-row {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input {
+  background-color: aquamarine;
+}
+
+.w-110 {
+  width: 110px;
+}
+
+.w-72 {
+  width: 72px;
 }
 
 @media (prefers-color-scheme: dark) {
