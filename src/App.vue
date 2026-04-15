@@ -3,7 +3,6 @@ import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
-
 import { reboot } from "tauri-plugin-power-manager-api";
 import { reactive, ref } from "vue";
 
@@ -112,7 +111,12 @@ function sleep(ms: number) {
 async function restartComputer() {
   message.success("5 秒后重启电脑");
   await sleep(5000);
-  await reboot();
+  try {
+    await reboot();
+  } catch (error) {
+    message.error(`重启电脑失败: ${error}`);
+    console.error(error);
+  }
 }
 
 // const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value);
