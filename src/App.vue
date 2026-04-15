@@ -1,7 +1,21 @@
 <script setup lang="ts">
 import { useItemsStore, type StartupItem } from "@/stores/items";
-import { NButton, NCard, NInput, NInputNumber, NSpace, NTable, NUpload } from "naive-ui";
+import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable } from "naive-ui";
 import { reactive, ref } from "vue";
+
+import { open } from "@tauri-apps/plugin-dialog";
+
+async function openFileDialog() {
+  const file = await open({
+    multiple: false,
+    directory: false,
+  });
+  console.log(file);
+
+  if (file) {
+    editingItem.target = file;
+  }
+}
 
 const itemsStore = useItemsStore();
 const editingIndex = ref<number>(-1);
@@ -98,9 +112,13 @@ function noSideSpace(value: string) {
           placeholder="启动项名称"
         />
 
-        <n-upload ref="uploadRef" :default-upload="false" @change="handleChange">
-          <n-button>选择文件</n-button>
-        </n-upload>
+        <div v-if="editingItem.target">
+          {{ editingItem.target }}
+          <n-button size="tiny" ghost @click="editingItem.target = ''">
+            <n-icon>x</n-icon>
+          </n-button>
+        </div>
+        <n-button v-else @click="openFileDialog">选择文件</n-button>
 
         <n-input-number
           class="input w-72"
