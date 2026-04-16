@@ -26,7 +26,8 @@ const { items } = storeToRefs(itemsStore);
 
 function addStartupItem() {
   itemsStore.addItem({
-    delay: 5,
+    args: "",
+    delay: 3,
     order: itemsStore.items.length + 1,
     target: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   });
@@ -45,7 +46,7 @@ async function useConfig() {
         if (item.delay > 0) {
           batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
         }
-        batchContent += `start "" "${item.target}"\n`;
+        batchContent += `start "" "${item.target}" "${item.args}"\n`;
       }
     }
     batchContent += "exit\n";
@@ -111,6 +112,7 @@ function restartComputer() {
   <main class="container">
     <div class="list-header">
       <div class="header-item target">启动项</div>
+      <div class="header-item args">启动参数</div>
       <div class="header-item order">启动顺序</div>
       <div class="header-item delay">启动延迟(秒)</div>
       <div class="header-item">操作</div>
@@ -129,6 +131,14 @@ function restartComputer() {
             />
             <n-button @click="() => openFileDialog(item)">选择</n-button>
           </div>
+
+          <n-input
+            v-model:value="item.args"
+            class="input-args"
+            type="text"
+            clearable
+            placeholder="启动参数"
+          />
 
           <div class="input-order">{{ item.order }}</div>
 
@@ -212,12 +222,17 @@ function restartComputer() {
     background-color: rgba(250, 250, 252, 1);
 
     .header-item {
-      padding: 6px 0;
+      padding: 4px 0;
       text-align: center;
     }
 
     .header-item.target {
-      flex: 1;
+      width: 320px;
+    }
+
+    .header-item.args {
+      width: 100px;
+      text-align: center;
     }
 
     .header-item.order {
@@ -244,15 +259,20 @@ function restartComputer() {
         align-items: center;
 
         .input-target-container {
-          flex: 1;
+          width: 320px;
           display: flex;
           align-items: center;
           gap: 8px;
+
+          .input-target {
+            overflow: clip;
+            white-space: nowrap;
+          }
         }
 
-        .input-target {
-          overflow: clip;
-          white-space: nowrap;
+        .input-args {
+          width: 100px;
+          text-align: center;
         }
 
         .input-order {

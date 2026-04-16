@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "LaunchPlusPlus",
+  "productName": "启动加加",
   "version": "../package.json",
   "identifier": "cn.coldstoneboy.launchplusplus",
   "build": {
