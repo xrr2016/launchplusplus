@@ -2,13 +2,12 @@
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { NButton, NCard, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
+import { NButton, NCard, NInputNumber, useMessage } from "naive-ui";
 import { reboot } from "tauri-plugin-power-manager-api";
-import { reactive, ref } from "vue";
 
 const message = useMessage();
 
-async function openFileDialog() {
+async function openFileDialog(item: StartupItem) {
   const file = await open({
     multiple: false,
     directory: false,
@@ -16,6 +15,7 @@ async function openFileDialog() {
   console.log(file);
 
   if (file) {
+    item.target = file;
   }
 }
 
@@ -122,7 +122,7 @@ async function restartComputer() {
         size="small"
       >
         <div class="card-row">
-          <n-button class="input-target" @click="openFileDialog">
+          <n-button class="input-target" @click="() => openFileDialog(item)">
             {{ item.target }}
           </n-button>
 
