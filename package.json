@@ -1,6 +1,6 @@
 {
   "name": "launchplusplus",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
+    "@types/bun": "^1.3.12",
     "@types/node": "^25.6.0",
     "@vicons/ionicons5": "^0.13.0",
     "@vitejs/plugin-vue": "^5.2.1",
