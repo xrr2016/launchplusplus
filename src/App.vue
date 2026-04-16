@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { storeToRefs } from "pinia";
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { NButton, NCard, NInputNumber, useMessage, NEmpty } from "naive-ui";
+import { Add as AddIcon5 } from "@vicons/ionicons5";
+import {
+  NButton,
+  NCard,
+  NEmpty,
+  NFloatButton,
+  NIcon,
+  NInputNumber,
+  NTooltip,
+  useMessage,
+} from "naive-ui";
+import { storeToRefs } from "pinia";
 import { reboot } from "tauri-plugin-power-manager-api";
+import { ref } from "vue";
 
 const message = useMessage();
 
@@ -26,9 +36,9 @@ const { items } = storeToRefs(itemsStore);
 
 function addStartupItem() {
   itemsStore.addItem({
-    target: "",
     delay: 5,
     order: itemsStore.items.length + 1,
+    target: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   });
 }
 
@@ -105,9 +115,6 @@ function restartComputer() {
 
 <template>
   <header class="header">
-    <n-button class="add-btn" size="small" type="success" @click="addStartupItem"
-      >添加启动项</n-button
-    >
     <n-button size="small" type="info" secondary @click="useConfig">使用配置</n-button>
     <n-button size="small" type="error" secondary @click="deleteConfig">取消配置</n-button>
     <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
@@ -117,7 +124,7 @@ function restartComputer() {
     <div class="list-header">
       <div class="header-item target">启动项</div>
       <div class="header-item order">启动顺序</div>
-      <div class="header-item delay">启动延迟</div>
+      <div class="header-item delay">启动延迟(秒)</div>
       <div class="header-item">操作</div>
     </div>
 
@@ -131,6 +138,9 @@ function restartComputer() {
           <n-input-number
             class="input-number"
             :default-value="item.order"
+            :min="1"
+            :step="1"
+            :max="items.length"
             clearable
             placeholder="启动顺序"
           />
@@ -138,6 +148,9 @@ function restartComputer() {
           <n-input-number
             class="input-number"
             :default-value="item.delay"
+            :min="0"
+            :max="60"
+            :step="1"
             clearable
             placeholder="启动延迟"
           />
@@ -168,6 +181,17 @@ function restartComputer() {
       </a>
     </div>
   </footer>
+
+  <n-tooltip trigger="hover" placement="right">
+    <template #trigger>
+      <n-float-button position="fixed" :bottom="20" :right="20" @click="addStartupItem">
+        <n-icon>
+          <AddIcon5 />
+        </n-icon>
+      </n-float-button>
+    </template>
+    添加启动项
+  </n-tooltip>
 </template>
 
 <style scoped></style>
@@ -189,7 +213,7 @@ function restartComputer() {
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -236,6 +260,7 @@ function restartComputer() {
     box-sizing: border-box;
 
     .item-card {
+      margin-bottom: 4px;
       .card-row {
         display: flex;
         gap: 12px;
@@ -243,6 +268,9 @@ function restartComputer() {
 
         .input-target {
           width: 320px;
+          overflow: clip;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .input-number {
