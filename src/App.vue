@@ -34,7 +34,6 @@ function addStartupItem() {
 
 const startupPath =
   "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
-const vbsPath = "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.vbs";
 
 async function useConfig() {
   try {
@@ -42,24 +41,16 @@ async function useConfig() {
 
     let batchContent = "@echo off\n";
     for (const item of sortedItems) {
-      if (item.target && item.delay > 0) {
-        batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
-        batchContent += `start "" "${item.target}"\n`;
-      } else if (item.target) {
+      if (item.target) {
+        if (item.delay > 0) {
+          batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
+        }
         batchContent += `start "" "${item.target}"\n`;
       }
     }
-    batchContent += `exit\n`;
-
-    const vbsContent = `Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "startup.bat", 0, False
-`;
+    batchContent += "exit\n";
 
     await writeTextFile(startupPath, batchContent, {
-      baseDir: BaseDirectory.Home,
-    });
-
-    await writeTextFile(vbsPath, vbsContent, {
       baseDir: BaseDirectory.Home,
     });
 
@@ -73,9 +64,6 @@ WshShell.Run "startup.bat", 0, False
 async function deleteConfig() {
   try {
     await remove(startupPath, {
-      baseDir: BaseDirectory.Home,
-    });
-    await remove(vbsPath, {
       baseDir: BaseDirectory.Home,
     });
     message.success("配置已删除");
