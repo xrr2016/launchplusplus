@@ -2,7 +2,7 @@
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { NButton, NCard, NIcon, NInput, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
+import { NButton, NCard, NIcon, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
 import { reboot } from "tauri-plugin-power-manager-api";
 import { reactive, ref } from "vue";
 
@@ -16,23 +16,21 @@ async function openFileDialog() {
   console.log(file);
 
   if (file) {
-    editingItem.path = file;
+    editingItem.target = file;
   }
 }
 
 const itemsStore = useItemsStore();
 const editingIndex = ref<number>(-1);
 const editingItem = reactive<StartupItem>({
-  name: "",
-  path: "",
+  target: "",
   delay: 5,
   order: 0,
 });
 
 function addStartupItem() {
   itemsStore.addItem({
-    name: "新启动项",
-    path: "",
+    target: "",
     delay: 5,
     order: itemsStore.items.length + 1,
   });
@@ -40,10 +38,9 @@ function addStartupItem() {
 
 function editItem(item: StartupItem) {
   editingIndex.value = itemsStore.items.indexOf(item);
-  editingItem.name = item.name;
   editingItem.delay = item.delay;
   editingItem.order = item.order;
-  editingItem.path = item.path;
+  editingItem.target = item.target;
   console.log(editingIndex.value, editingItem);
 }
 
@@ -55,21 +52,17 @@ function saveItem() {
   editingIndex.value = -1;
 }
 
-function handleChange() {
-  console.log(editingItem);
-}
-
 async function useConfig() {
   try {
     const sortedItems = [...itemsStore.items].sort((a, b) => a.order - b.order);
 
     let batchContent = "@echo off\n";
     for (const item of sortedItems) {
-      if (item.path && item.delay > 0) {
+      if (item.target && item.delay > 0) {
         batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
-        batchContent += `start "" "${item.path}"\n`;
-      } else if (item.path) {
-        batchContent += `start "" "${item.path}"\n`;
+        batchContent += `start "" "${item.target}"\n`;
+      } else if (item.target) {
+        batchContent += `start "" "${item.target}"\n`;
       }
     }
     batchContent += `exit\n`;
@@ -149,23 +142,14 @@ async function restartComputer() {
       </thead>
     </n-table>
 
-    <n-card v-for="item in itemsStore.items" :key="item.name">
+    <n-card v-for="item in itemsStore.items" :key="item.target">
       <div
         v-if="editingIndex > -1 && editingIndex === itemsStore.items.indexOf(item)"
         class="card-row"
       >
-        <n-input
-          class="input w-72"
-          v-model:value="editingItem.name"
-          type="text"
-          @input="handleChange"
-          :default-value="item.name"
-          placeholder="启动项名称"
-        />
-
-        <div v-if="editingItem.path">
-          {{ editingItem.path }}
-          <n-button size="tiny" ghost @click="editingItem.path = ''">
+        <div v-if="editingItem.target">
+          {{ editingItem.target }}
+          <n-button size="tiny" ghost @click="editingItem.target = ''">
             <n-icon>x</n-icon>
           </n-button>
         </div>
@@ -190,25 +174,37 @@ async function restartComputer() {
         <n-space :size="4">
           <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
 
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item.name)"
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
             >删除</n-button
           >
         </n-space>
       </div>
       <div v-else class="card-row">
-        <div>{{ item.name }}</div>
-        <div>{{ item.path }}</div>
+        <div>{{ item.target }}</div>
         <div>{{ item.order }}</div>
         <div>{{ item.delay }}秒</div>
         <n-space :size="4">
           <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item.name)"
+          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
             >删除</n-button
           >
         </n-space>
       </div>
     </n-card>
   </main>
+  <footer>
+    下载地址：<a
+      href="https://github.com/launchplusplus/launchplusplus/releases/latest"
+      target="_blank"
+    >
+      https://github.com/launchplusplus/launchplusplus/releases/latest
+    </a>
+    <br />
+    联系：<a href="mailto:contact@launchplusplus.com">contact@launchplusplus.com</a>
+    作者：ColdStoneBoy 赞助：<a href="https://github.com/sponsors/ColdStoneBoy" target="_blank">
+      https://github.com/sponsors/ColdStoneBoy
+    </a>
+  </footer>
 </template>
 
 <style scoped></style>
