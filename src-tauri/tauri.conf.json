@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "launchplusplus",
+  "productName": "LaunchPlusPlus",
   "version": "../package.json",
   "identifier": "cn.coldstoneboy.launchplusplus",
   "build": {
