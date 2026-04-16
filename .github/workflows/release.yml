@@ -41,7 +41,7 @@ jobs:
 
       - uses: tauri-apps/tauri-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           tagName: app-v__VERSION__
           releaseName: "App v__VERSION__"
