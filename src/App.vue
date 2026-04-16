@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { NButton, NCard, NInputNumber, useMessage } from "naive-ui";
+import { NButton, NCard, NInputNumber, useMessage, NEmpty } from "naive-ui";
 import { reboot } from "tauri-plugin-power-manager-api";
 
 const message = useMessage();
@@ -20,6 +22,7 @@ async function openFileDialog(item: StartupItem) {
 }
 
 const itemsStore = useItemsStore();
+const { items } = storeToRefs(itemsStore);
 
 function addStartupItem() {
   itemsStore.addItem({
@@ -29,9 +32,12 @@ function addStartupItem() {
   });
 }
 
+const startupPath =
+  "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
+
 async function useConfig() {
   try {
-    const sortedItems = [...itemsStore.items].sort((a, b) => a.order - b.order);
+    const sortedItems = items.value.sort((a, b) => a.order - b.order);
 
     let batchContent = "@echo off\n";
     for (const item of sortedItems) {
@@ -44,9 +50,6 @@ async function useConfig() {
     }
     batchContent += `exit\n`;
 
-    // \Roaming\Microsoft\Windows\Start Menu\Programs\Startup
-    const startupPath =
-      "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
     console.log(batchContent, startupPath);
 
     await writeTextFile(startupPath, batchContent, {
@@ -61,9 +64,6 @@ async function useConfig() {
 
 async function deleteConfig() {
   try {
-    const startupPath =
-      "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
-
     await remove(startupPath, {
       baseDir: BaseDirectory.Home,
     });
@@ -78,15 +78,22 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function restartComputer() {
-  message.success("5 秒后重启电脑");
-  await sleep(5000);
-  try {
-    await reboot();
-  } catch (error) {
-    message.error(`重启电脑失败: ${error}`);
-    console.error(error);
-  }
+let timeout = ref(10);
+
+function restartComputer() {
+  message.success(`${timeout.value} 秒后重启电脑`);
+
+  setInterval(async () => {
+    timeout.value--;
+    message.success(`${timeout.value} 秒后重启电脑`);
+    if (timeout.value <= 0) {
+      try {
+        await reboot();
+      } catch (error) {
+        message.error(`重启电脑失败: ${error}`);
+      }
+    }
+  }, 1000);
 }
 
 // const onlyAllowNumber = (value: string) => !value || /^\d+$/.test(value);
@@ -114,13 +121,8 @@ async function restartComputer() {
       <div class="header-item">操作</div>
     </div>
 
-    <TransitionGroup name="list" tag="div" class="item-list">
-      <n-card
-        v-for="(item, index) in itemsStore.items"
-        :key="item.target"
-        class="item-card"
-        size="small"
-      >
+    <TransitionGroup v-if="items.length > 0" name="list" tag="div" class="item-list">
+      <n-card v-for="(item, index) in items" :key="item.target" class="item-card" size="small">
         <div class="card-row">
           <n-button class="input-target" @click="() => openFileDialog(item)">
             {{ item.target }}
@@ -146,27 +148,23 @@ async function restartComputer() {
         </div>
       </n-card>
     </TransitionGroup>
+
+    <n-empty v-else class="empty" size="huge" description="你什么也找不到"> </n-empty>
   </main>
 
   <footer class="app-footer">
     <div class="footer-item">
-      <span class="footer-label">作者</span>
-      <span>冷石Boy</span>
+      <span class="footer-label">作者:</span>
+      <a href="https://space.bilibili.com/24653681" target="_blank" class="footer-link">冷石Boy</a>
     </div>
     <div class="footer-item">
-      <span class="footer-label">下载地址</span>
+      <span class="footer-label">下载地址:</span>
       <a
         href="https://github.com/launchplusplus/launchplusplus/releases/latest"
         target="_blank"
         class="footer-link"
       >
-        GitHub Releases
-      </a>
-    </div>
-    <div class="footer-item">
-      <span class="footer-label">赞助</span>
-      <a href="https://github.com/sponsors/ColdStoneBoy" target="_blank" class="footer-link">
-        GitHub Sponsors
+        GitHub
       </a>
     </div>
   </footer>
@@ -201,36 +199,36 @@ async function restartComputer() {
   }
 }
 
-.list-header {
-  display: flex;
-  gap: 12px;
-  padding: 0 16px;
-  box-sizing: border-box;
-  background-color: rgba(250, 250, 252, 1);
-
-  .header-item {
-    padding: 6px 0;
-    text-align: center;
-  }
-
-  .header-item.target {
-    width: 320px;
-  }
-
-  .header-item.order {
-    flex: 1;
-  }
-
-  .header-item.delay {
-    flex: 1;
-  }
-}
-
 .container {
   width: 100%;
   padding: 0 12px;
   box-sizing: border-box;
   overflow: hidden;
+
+  .list-header {
+    display: flex;
+    gap: 12px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    background-color: rgba(250, 250, 252, 1);
+
+    .header-item {
+      padding: 6px 0;
+      text-align: center;
+    }
+
+    .header-item.target {
+      width: 320px;
+    }
+
+    .header-item.order {
+      flex: 1;
+    }
+
+    .header-item.delay {
+      flex: 1;
+    }
+  }
 
   .item-list {
     height: calc(100vh - 130px);
@@ -252,6 +250,10 @@ async function restartComputer() {
         }
       }
     }
+  }
+
+  .empty {
+    padding: 12px;
   }
 }
 
