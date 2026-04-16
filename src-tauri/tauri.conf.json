@@ -24,6 +24,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -35,6 +36,14 @@
       "nsis": {
         "installerIcon": "icons/icon.ico"
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE0QzQyM0E5QTYxRUQxQUEKUldTcTBSNm1xU1BFcE9UQVg4cFRsOWlQaEl1WENYTUlZZUhuR3pjSjBHbnE1QVh2bzY0SStZUmEK",
+      "endpoints": [
+        "https://github.com/xrr2016/launchplusplus/releases/latest/download/latest.json"
+      ]
     }
   }
 }
