@@ -44,6 +44,7 @@ function addStartupItem() {
 
 const startupPath =
   "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
+const vbsPath = "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.vbs";
 
 async function useConfig() {
   try {
@@ -60,11 +61,18 @@ async function useConfig() {
     }
     batchContent += `exit\n`;
 
-    console.log(batchContent, startupPath);
+    const vbsContent = `Set WshShell = CreateObject("WScript.Shell")
+WshShell.Run "startup.bat", 0, False
+`;
 
     await writeTextFile(startupPath, batchContent, {
       baseDir: BaseDirectory.Home,
     });
+
+    await writeTextFile(vbsPath, vbsContent, {
+      baseDir: BaseDirectory.Home,
+    });
+
     message.success("配置已应用到启动文件夹");
   } catch (error) {
     message.error(`应用配置失败: ${error}`);
@@ -75,6 +83,9 @@ async function useConfig() {
 async function deleteConfig() {
   try {
     await remove(startupPath, {
+      baseDir: BaseDirectory.Home,
+    });
+    await remove(vbsPath, {
       baseDir: BaseDirectory.Home,
     });
     message.success("配置已删除");
