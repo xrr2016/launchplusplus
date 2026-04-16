@@ -160,7 +160,7 @@ function restartComputer() {
     <div class="footer-item">
       <span class="footer-label">下载地址:</span>
       <a
-        href="https://github.com/launchplusplus/launchplusplus/releases/latest"
+        href="https://github.com/xrr2016/launchplusplus/releases"
         target="_blank"
         class="footer-link"
       >
