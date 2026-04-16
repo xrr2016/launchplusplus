@@ -1,12 +1,48 @@
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "node:path";
+import AutoImport from "unplugin-auto-import/vite";
+import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
+import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    AutoImport({
+      imports: [
+        "vue",
+        {
+          "naive-ui": ["useDialog", "useMessage", "useNotification", "useLoadingBar"],
+        },
+      ],
+    }),
+    Components({
+      resolvers: [NaiveUiResolver()],
+    }),
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "vue-vendor",
+              test: /node_modules[\\/]vue/,
+              priority: 20,
+            },
+            {
+              name: "naive-ui-vendor",
+              test: /node_modules[\\/]naive-ui/,
+              priority: 20,
+            },
+          ],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
