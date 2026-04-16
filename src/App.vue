@@ -142,55 +142,57 @@ async function restartComputer() {
       </thead>
     </n-table>
 
-    <n-card v-for="item in itemsStore.items" :key="item.target">
-      <div
-        v-if="editingIndex > -1 && editingIndex === itemsStore.items.indexOf(item)"
-        class="card-row"
-      >
-        <div v-if="editingItem.target">
-          {{ editingItem.target }}
-          <n-button size="tiny" ghost @click="editingItem.target = ''">
-            <n-icon>x</n-icon>
-          </n-button>
+    <TransitionGroup name="list" tag="div" class="item-list">
+      <n-card v-for="item in itemsStore.items" :key="item.target" class="item-card">
+        <div
+          v-if="editingIndex > -1 && editingIndex === itemsStore.items.indexOf(item)"
+          class="card-row"
+        >
+          <div v-if="editingItem.target">
+            {{ editingItem.target }}
+            <n-button size="tiny" ghost @click="editingItem.target = ''">
+              <n-icon>x</n-icon>
+            </n-button>
+          </div>
+          <n-button v-else @click="openFileDialog">选择文件</n-button>
+
+          <n-input-number
+            class="input w-72"
+            v-model:value="editingItem.order"
+            :default-value="item.order"
+            clearable
+            placeholder="启动顺序"
+          />
+
+          <n-input-number
+            class="input w-72"
+            v-model:value="editingItem.delay"
+            :default-value="item.delay"
+            clearable
+            placeholder="启动延迟"
+          />
+
+          <n-space :size="4">
+            <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
+
+            <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+              >删除</n-button
+            >
+          </n-space>
         </div>
-        <n-button v-else @click="openFileDialog">选择文件</n-button>
-
-        <n-input-number
-          class="input w-72"
-          v-model:value="editingItem.order"
-          :default-value="item.order"
-          clearable
-          placeholder="启动顺序"
-        />
-
-        <n-input-number
-          class="input w-72"
-          v-model:value="editingItem.delay"
-          :default-value="item.delay"
-          clearable
-          placeholder="启动延迟"
-        />
-
-        <n-space :size="4">
-          <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
-
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
-            >删除</n-button
-          >
-        </n-space>
-      </div>
-      <div v-else class="card-row">
-        <div>{{ item.target }}</div>
-        <div>{{ item.order }}</div>
-        <div>{{ item.delay }}秒</div>
-        <n-space :size="4">
-          <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
-          <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
-            >删除</n-button
-          >
-        </n-space>
-      </div>
-    </n-card>
+        <div v-else class="card-row">
+          <div>{{ item.target }}</div>
+          <div>{{ item.order }}</div>
+          <div>{{ item.delay }}秒</div>
+          <n-space :size="4">
+            <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
+            <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
+              >删除</n-button
+            >
+          </n-space>
+        </div>
+      </n-card>
+    </TransitionGroup>
   </main>
   <footer>
     下载地址：<a
@@ -250,6 +252,33 @@ async function restartComputer() {
 
 .w-72 {
   width: 72px !important;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.list-move {
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-enter-active,
+  .list-leave-active,
+  .list-move {
+    transition: none;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
