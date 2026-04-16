@@ -17,6 +17,9 @@ export const useItemsStore = defineStore("items", () => {
   function removeItem(index: number) {
     console.log(index);
     items.value.splice(index, 1);
+    items.value.forEach((item, i) => {
+      item.order = i + 1;
+    });
   }
 
   return { items, addItem, removeItem };

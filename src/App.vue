@@ -2,17 +2,7 @@
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { Add as AddIcon5 } from "@vicons/ionicons5";
-import {
-  NButton,
-  NCard,
-  NEmpty,
-  NFloatButton,
-  NIcon,
-  NInputNumber,
-  NTooltip,
-  useMessage,
-} from "naive-ui";
+import { NButton, NCard, NEmpty, NInput, NInputNumber, useMessage } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { reboot } from "tauri-plugin-power-manager-api";
 import { ref } from "vue";
@@ -122,6 +112,9 @@ function restartComputer() {
 
 <template>
   <header class="header">
+    <n-button size="small" class="add-btn" type="primary" @click="addStartupItem"
+      >添加启动项</n-button
+    >
     <n-button size="small" type="info" secondary @click="useConfig">使用配置</n-button>
     <n-button size="small" type="error" secondary @click="deleteConfig">取消配置</n-button>
     <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
@@ -138,19 +131,16 @@ function restartComputer() {
     <TransitionGroup v-if="items.length > 0" name="list" tag="div" class="item-list">
       <n-card v-for="(item, index) in items" :key="item.target" class="item-card" size="small">
         <div class="card-row">
-          <n-button class="input-target" @click="() => openFileDialog(item)">
-            {{ item.target }}
-          </n-button>
-
-          <n-input-number
-            class="input-number"
-            :default-value="item.order"
-            :min="1"
-            :step="1"
-            :max="items.length"
+          <n-input
+            v-model:value="item.target"
+            class="input-target"
+            type="text"
             clearable
-            placeholder="启动顺序"
+            placeholder="启动项路径"
+            @click.stop="() => openFileDialog(item)"
           />
+
+          <div class="input-order">{{ item.order }}</div>
 
           <n-input-number
             class="input-number"
@@ -168,8 +158,9 @@ function restartComputer() {
         </div>
       </n-card>
     </TransitionGroup>
-
-    <n-empty v-else class="empty" size="huge" description="你什么也找不到"> </n-empty>
+    <div v-else class="empty">
+      <n-empty size="huge" description="没有任何启动项"> </n-empty>
+    </div>
   </main>
 
   <footer class="app-footer">
@@ -188,17 +179,6 @@ function restartComputer() {
       </a>
     </div>
   </footer>
-
-  <n-tooltip trigger="hover" placement="right">
-    <template #trigger>
-      <n-float-button position="fixed" :bottom="20" :right="20" @click="addStartupItem">
-        <n-icon>
-          <AddIcon5 />
-        </n-icon>
-      </n-float-button>
-    </template>
-    添加启动项
-  </n-tooltip>
 </template>
 
 <style scoped></style>
@@ -220,7 +200,6 @@ function restartComputer() {
 
 .header {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -249,15 +228,17 @@ function restartComputer() {
     }
 
     .header-item.target {
-      width: 320px;
+      flex: 1;
     }
 
     .header-item.order {
-      flex: 1;
+      width: 80px;
+      text-align: center;
     }
 
     .header-item.delay {
-      flex: 1;
+      width: 120px;
+      text-align: center;
     }
   }
 
@@ -274,37 +255,43 @@ function restartComputer() {
         align-items: center;
 
         .input-target {
-          width: 320px;
+          flex: 1;
           overflow: clip;
-          text-overflow: ellipsis;
           white-space: nowrap;
         }
 
+        .input-order {
+          width: 80px;
+          text-align: center;
+        }
+
         .input-number {
-          flex: 1;
+          width: 120px;
+          text-align: center;
         }
       }
     }
   }
 
   .empty {
-    padding: 12px;
+    height: calc(100vh - 130px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .list-enter-from {
   opacity: 0;
-  transform: translateX(-30px);
 }
 
 .list-leave-to {
   opacity: 0;
-  transform: translateX(30px);
 }
 
 .list-move {
