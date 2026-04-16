@@ -2,7 +2,7 @@
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { NButton, NCard, NIcon, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
+import { NButton, NCard, NInputNumber, NSpace, NTable, useMessage } from "naive-ui";
 import { reboot } from "tauri-plugin-power-manager-api";
 import { reactive, ref } from "vue";
 
@@ -121,20 +121,18 @@ async function restartComputer() {
 
 <template>
   <header class="header">
-    <n-button size="small" type="success" @click="addStartupItem">添加启动项</n-button>
-
-    <n-space>
-      <n-button size="small" type="info" secondary @click="useConfig">使用配置</n-button>
-      <n-button size="small" type="error" secondary @click="deleteConfig">删除配置</n-button>
-      <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
-    </n-space>
+    <n-button class="add-btn" size="small" type="success" @click="addStartupItem"
+      >添加启动项</n-button
+    >
+    <n-button size="small" type="info" secondary @click="useConfig">使用配置</n-button>
+    <n-button size="small" type="error" secondary @click="deleteConfig">取消配置</n-button>
+    <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
   </header>
   <main class="container">
     <n-table>
       <thead>
         <tr>
           <th>启动项</th>
-          <th>目标</th>
           <th>顺序</th>
           <th>延迟</th>
           <th>操作</th>
@@ -144,21 +142,13 @@ async function restartComputer() {
 
     <TransitionGroup name="list" tag="div" class="item-list">
       <n-card v-for="item in itemsStore.items" :key="item.target" class="item-card">
-        <div
-          v-if="editingIndex > -1 && editingIndex === itemsStore.items.indexOf(item)"
-          class="card-row"
-        >
-          <div v-if="editingItem.target">
-            {{ editingItem.target }}
-            <n-button size="tiny" ghost @click="editingItem.target = ''">
-              <n-icon>x</n-icon>
-            </n-button>
-          </div>
-          <n-button v-else @click="openFileDialog">选择文件</n-button>
+        <div class="card-row">
+          <n-button @click="openFileDialog">
+            {{ item.target }}
+          </n-button>
 
           <n-input-number
             class="input w-72"
-            v-model:value="editingItem.order"
             :default-value="item.order"
             clearable
             placeholder="启动顺序"
@@ -166,26 +156,16 @@ async function restartComputer() {
 
           <n-input-number
             class="input w-72"
-            v-model:value="editingItem.delay"
             :default-value="item.delay"
             clearable
             placeholder="启动延迟"
           />
 
           <n-space :size="4">
+            <n-button size="tiny" quaternary type="info" @click="editItem(item)">修改</n-button>
+
             <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
 
-            <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
-              >删除</n-button
-            >
-          </n-space>
-        </div>
-        <div v-else class="card-row">
-          <div>{{ item.target }}</div>
-          <div>{{ item.order }}</div>
-          <div>{{ item.delay }}秒</div>
-          <n-space :size="4">
-            <n-button size="tiny" quaternary type="info" @click="editItem(item)">编辑</n-button>
             <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
               >删除</n-button
             >
@@ -194,33 +174,45 @@ async function restartComputer() {
       </n-card>
     </TransitionGroup>
   </main>
-  <footer>
-    下载地址：<a
-      href="https://github.com/launchplusplus/launchplusplus/releases/latest"
-      target="_blank"
-    >
-      https://github.com/launchplusplus/launchplusplus/releases/latest
-    </a>
-    <br />
-    联系：<a href="mailto:contact@launchplusplus.com">contact@launchplusplus.com</a>
-    作者：ColdStoneBoy 赞助：<a href="https://github.com/sponsors/ColdStoneBoy" target="_blank">
-      https://github.com/sponsors/ColdStoneBoy
-    </a>
+  <footer class="app-footer">
+    <div class="footer-links">
+      <div class="footer-item">
+        <span class="footer-label">作者</span>
+        <span>冷石Boy</span>
+      </div>
+      <div class="footer-item">
+        <span class="footer-label">下载地址</span>
+        <a
+          href="https://github.com/launchplusplus/launchplusplus/releases/latest"
+          target="_blank"
+          class="footer-link"
+        >
+          GitHub Releases
+        </a>
+      </div>
+
+      <div class="footer-item">
+        <span class="footer-label">赞助</span>
+        <a href="https://github.com/sponsors/ColdStoneBoy" target="_blank" class="footer-link">
+          GitHub Sponsors
+        </a>
+      </div>
+    </div>
   </footer>
 </template>
 
 <style scoped></style>
 <style>
 :root {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-
-  padding: 12px;
   color: #0f0f0f;
   background-color: #f6f6f6;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -232,11 +224,20 @@ async function restartComputer() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  padding: 12px;
+
+  .add-btn {
+    flex: 1;
+  }
 }
 
 .container {
   padding: 12px 0;
-  overflow: hidden auto;
+  .item-list {
+    height: 500px;
+    overflow: hidden auto;
+  }
 }
 
 .card-row {
@@ -281,10 +282,40 @@ async function restartComputer() {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.footer-link {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.footer-link:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #2563eb40;
+  border-radius: 2px;
 }
 </style>
