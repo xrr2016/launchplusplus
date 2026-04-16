@@ -14,8 +14,8 @@ export const useItemsStore = defineStore("items", () => {
     items.value.push(item);
   }
 
-  function removeItem(item: StartupItem) {
-    items.value = items.value.filter((i) => i !== item);
+  function removeItem(index: number) {
+    console.log(index);
   }
 
   return { items, addItem, removeItem };

@@ -16,17 +16,10 @@ async function openFileDialog() {
   console.log(file);
 
   if (file) {
-    editingItem.target = file;
   }
 }
 
 const itemsStore = useItemsStore();
-const editingIndex = ref<number>(-1);
-const editingItem = reactive<StartupItem>({
-  target: "",
-  delay: 5,
-  order: 0,
-});
 
 function addStartupItem() {
   itemsStore.addItem({
@@ -34,22 +27,6 @@ function addStartupItem() {
     delay: 5,
     order: itemsStore.items.length + 1,
   });
-}
-
-function editItem(item: StartupItem) {
-  editingIndex.value = itemsStore.items.indexOf(item);
-  editingItem.delay = item.delay;
-  editingItem.order = item.order;
-  editingItem.target = item.target;
-  console.log(editingIndex.value, editingItem);
-}
-
-function saveItem() {
-  console.log(editingItem);
-  itemsStore.items[editingIndex.value] = {
-    ...editingItem,
-  };
-  editingIndex.value = -1;
 }
 
 async function useConfig() {
@@ -128,75 +105,69 @@ async function restartComputer() {
     <n-button size="small" type="error" secondary @click="deleteConfig">取消配置</n-button>
     <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
   </header>
+
   <main class="container">
-    <n-table>
-      <thead>
-        <tr>
-          <th>启动项</th>
-          <th>顺序</th>
-          <th>延迟</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-    </n-table>
+    <div class="list-header">
+      <div class="header-item target">启动项</div>
+      <div class="header-item order">启动顺序</div>
+      <div class="header-item delay">启动延迟</div>
+      <div class="header-item">操作</div>
+    </div>
 
     <TransitionGroup name="list" tag="div" class="item-list">
-      <n-card v-for="item in itemsStore.items" :key="item.target" class="item-card">
+      <n-card
+        v-for="(item, index) in itemsStore.items"
+        :key="item.target"
+        class="item-card"
+        size="small"
+      >
         <div class="card-row">
-          <n-button @click="openFileDialog">
+          <n-button class="input-target" @click="openFileDialog">
             {{ item.target }}
           </n-button>
 
           <n-input-number
-            class="input w-72"
+            class="input-number"
             :default-value="item.order"
             clearable
             placeholder="启动顺序"
           />
 
           <n-input-number
-            class="input w-72"
+            class="input-number"
             :default-value="item.delay"
             clearable
             placeholder="启动延迟"
           />
 
-          <n-space :size="4">
-            <n-button size="tiny" quaternary type="info" @click="editItem(item)">修改</n-button>
-
-            <n-button size="tiny" quaternary type="success" @click="saveItem">保存</n-button>
-
-            <n-button size="tiny" quaternary type="error" @click="itemsStore.removeItem(item)"
-              >删除</n-button
-            >
-          </n-space>
+          <n-button size="tiny" quaternary type="error" @click="() => itemsStore.removeItem(index)"
+            >删除</n-button
+          >
         </div>
       </n-card>
     </TransitionGroup>
   </main>
-  <footer class="app-footer">
-    <div class="footer-links">
-      <div class="footer-item">
-        <span class="footer-label">作者</span>
-        <span>冷石Boy</span>
-      </div>
-      <div class="footer-item">
-        <span class="footer-label">下载地址</span>
-        <a
-          href="https://github.com/launchplusplus/launchplusplus/releases/latest"
-          target="_blank"
-          class="footer-link"
-        >
-          GitHub Releases
-        </a>
-      </div>
 
-      <div class="footer-item">
-        <span class="footer-label">赞助</span>
-        <a href="https://github.com/sponsors/ColdStoneBoy" target="_blank" class="footer-link">
-          GitHub Sponsors
-        </a>
-      </div>
+  <footer class="app-footer">
+    <div class="footer-item">
+      <span class="footer-label">作者</span>
+      <span>冷石Boy</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">下载地址</span>
+      <a
+        href="https://github.com/launchplusplus/launchplusplus/releases/latest"
+        target="_blank"
+        class="footer-link"
+      >
+        GitHub Releases
+      </a>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">赞助</span>
+      <a href="https://github.com/sponsors/ColdStoneBoy" target="_blank" class="footer-link">
+        GitHub Sponsors
+      </a>
     </div>
   </footer>
 </template>
@@ -206,14 +177,12 @@ async function restartComputer() {
 :root {
   width: 100vw;
   height: 100vh;
-  box-sizing: border-box;
+  overflow: hidden;
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
   font-weight: 400;
   color: #0f0f0f;
-  background-color: #f6f6f6;
   font-synthesis: none;
+  background-color: #f6f6f6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -232,27 +201,58 @@ async function restartComputer() {
   }
 }
 
-.container {
-  padding: 12px 0;
-  .item-list {
-    height: 500px;
-    overflow: hidden auto;
+.list-header {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background-color: rgba(250, 250, 252, 1);
+
+  .header-item {
+    padding: 6px 0;
+    text-align: center;
+  }
+
+  .header-item.target {
+    width: 320px;
+  }
+
+  .header-item.order {
+    flex: 1;
+  }
+
+  .header-item.delay {
+    flex: 1;
   }
 }
 
-.card-row {
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.container {
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+  overflow: hidden;
 
-.w-110 {
-  width: 110px !important;
-}
+  .item-list {
+    height: calc(100vh - 130px);
+    overflow: hidden auto;
+    box-sizing: border-box;
 
-.w-72 {
-  width: 72px !important;
+    .item-card {
+      .card-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+
+        .input-target {
+          width: 320px;
+        }
+
+        .input-number {
+          flex: 1;
+        }
+      }
+    }
+  }
 }
 
 .list-enter-active,
@@ -282,18 +282,19 @@ async function restartComputer() {
   }
 }
 
-.footer-links {
+.app-footer {
+  margin-top: 12px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px 32px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
 }
 
 .footer-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .footer-label {
@@ -310,12 +311,5 @@ async function restartComputer() {
 .footer-link:hover {
   color: #3b82f6;
   text-decoration: underline;
-}
-
-.footer-link:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px #2563eb40;
-  border-radius: 2px;
 }
 </style>
