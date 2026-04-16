@@ -128,27 +128,28 @@ function restartComputer() {
       <div class="header-item">操作</div>
     </div>
 
-    <TransitionGroup v-if="items.length > 0" name="list" tag="div" class="item-list">
+    <div v-if="items.length > 0" name="list" tag="div" class="item-list">
       <n-card v-for="(item, index) in items" :key="item.target" class="item-card" size="small">
         <div class="card-row">
-          <n-input
-            v-model:value="item.target"
-            class="input-target"
-            type="text"
-            clearable
-            placeholder="启动项路径"
-            @click.stop="() => openFileDialog(item)"
-          />
+          <div class="input-target-container">
+            <n-input
+              v-model:value="item.target"
+              class="input-target"
+              type="text"
+              clearable
+              placeholder="启动项路径"
+            />
+            <n-button @click="() => openFileDialog(item)">选择</n-button>
+          </div>
 
           <div class="input-order">{{ item.order }}</div>
 
           <n-input-number
             class="input-number"
-            :default-value="item.delay"
+            v-model:value="item.delay"
             :min="0"
             :max="60"
             :step="1"
-            clearable
             placeholder="启动延迟"
           />
 
@@ -157,7 +158,7 @@ function restartComputer() {
           >
         </div>
       </n-card>
-    </TransitionGroup>
+    </div>
     <div v-else class="empty">
       <n-empty size="huge" description="没有任何启动项"> </n-empty>
     </div>
@@ -254,8 +255,14 @@ function restartComputer() {
         gap: 12px;
         align-items: center;
 
-        .input-target {
+        .input-target-container {
           flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .input-target {
           overflow: clip;
           white-space: nowrap;
         }
