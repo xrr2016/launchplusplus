@@ -4,6 +4,6 @@
     "tagName": "v${version}"
   },
   "hooks": {
-    "after:bump": "npx auto-changelog -p && node scripts/release.ts"
+    "after:bump": "npx auto-changelog -p"
   }
 }
