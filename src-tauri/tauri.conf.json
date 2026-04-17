@@ -40,7 +40,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE0QzQyM0E5QTYxRUQxQUEKUldTcTBSNm1xU1BFcE9UQVg4cFRsOWlQaEl1WENYTUlZZUhuR3pjSjBHbnE1QVh2bzY0SStZUmEK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRGRDRERDc1QzU0MThBM0MKUldROGlrSEZkZDNVVHlmWnA2aTNsT3pWaUZ6QUJUUmxSRkw0V3g0YVlYREdURC9CYk00aXc1ZHAK",
       "endpoints": [
         "https://github.com/xrr2016/launchplusplus/releases/latest/download/latest.json"
       ]
