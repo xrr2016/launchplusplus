@@ -2,12 +2,31 @@
 import { useItemsStore, type StartupItem } from "@/stores/items";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { check } from "@tauri-apps/plugin-updater";
 import { NButton, NCard, NEmpty, NInput, NInputNumber, useMessage } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { reboot } from "tauri-plugin-power-manager-api";
 import { ref } from "vue";
 
 const message = useMessage();
+
+async function checkForUpdates() {
+  try {
+    const update = await check();
+    if (update) {
+      message.info(`发现新版本 ${update.version}，正在下载...`);
+      await update.downloadAndInstall();
+      message.success("更新已安装，即将重启...");
+      await relaunch();
+    } else {
+      message.success("当前已是最新版本");
+    }
+  } catch (error) {
+    message.error(`检查更新失败: ${error}`);
+    console.error(error);
+  }
+}
 
 async function openFileDialog(item: StartupItem) {
   const file = await open({
@@ -35,6 +54,10 @@ function addStartupItem() {
 
 const startupPath =
   "AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\startup.bat";
+
+function saveConfig() {
+  message.success("配置已保存");
+}
 
 async function useConfig() {
   try {
@@ -101,20 +124,22 @@ function restartComputer() {
 
 <template>
   <header class="header">
-    <n-button size="small" class="add-btn" type="primary" @click="addStartupItem"
+    <n-button size="small" class="add-btn" type="primary" ghost @click="addStartupItem"
       >添加启动项</n-button
     >
-    <n-button size="small" type="info" secondary @click="useConfig">使用配置</n-button>
-    <n-button size="small" type="error" secondary @click="deleteConfig">取消配置</n-button>
-    <n-button size="small" type="warning" secondary @click="restartComputer">重启电脑</n-button>
+    <n-button size="small" type="info" ghost @click="saveConfig">保存配置</n-button>
+    <n-button size="small" type="success" ghost @click="useConfig">使用配置</n-button>
+    <n-button size="small" type="error" ghost @click="deleteConfig">删除配置</n-button>
+    <n-button size="small" type="warning" ghost @click="restartComputer">重启电脑</n-button>
+    <n-button size="small" type="primary" ghost @click="checkForUpdates">检查更新</n-button>
   </header>
 
   <main class="container">
     <div class="list-header">
       <div class="header-item target">启动项</div>
-      <div class="header-item args">启动参数</div>
-      <div class="header-item order">启动顺序</div>
-      <div class="header-item delay">启动延迟(秒)</div>
+      <div class="header-item args">参数</div>
+      <div class="header-item order">顺序</div>
+      <div class="header-item delay">延迟(秒)</div>
       <div class="header-item">操作</div>
     </div>
 
@@ -168,13 +193,12 @@ function restartComputer() {
       <a href="https://space.bilibili.com/24653681" target="_blank" class="footer-link">冷石Boy</a>
     </div>
     <div class="footer-item">
-      <span class="footer-label">下载地址:</span>
       <a
         href="https://download.upgrade.toolsetlink.com/download?appKey=K1OXgiXy_ZrIvHg_xCCCxg"
         target="_blank"
         class="footer-link"
       >
-        GitHub
+        下载地址
       </a>
     </div>
   </footer>

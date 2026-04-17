@@ -8,6 +8,12 @@ import App from "./App.vue";
 const appStore = useAppStore();
 const itemsStore = useItemsStore();
 
+const themeOverrides = {
+  common: {
+    primaryColor: "#276FC0FF",
+  },
+};
+
 onMounted(async () => {
   await appStore.$tauri.start();
   await itemsStore.$tauri.start();
@@ -15,7 +21,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <n-config-provider :theme="appStore.theme">
+  <n-config-provider :theme="appStore.theme" :theme-overrides="themeOverrides">
     <n-message-provider>
       <App />
     </n-message-provider>
