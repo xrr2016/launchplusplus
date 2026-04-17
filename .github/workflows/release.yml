@@ -59,10 +59,10 @@ jobs:
           args: ${{ matrix.args }}
 
   upgradeLink-upload:
-    needs: publish-tauri # 依赖于 publish-tauri作业完成
+    needs: publish-tauri
     permissions:
       contents: write
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Send a request to UpgradeLink
         uses: toolsetlink/upgradelink-action@3.0.2
