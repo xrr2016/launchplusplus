@@ -170,7 +170,7 @@ function restartComputer() {
     <div class="footer-item">
       <span class="footer-label">下载地址:</span>
       <a
-        href="https://github.com/xrr2016/launchplusplus/releases"
+        href="https://download.upgrade.toolsetlink.com/download?appKey=K1OXgiXy_ZrIvHg_xCCCxg"
         target="_blank"
         class="footer-link"
       >

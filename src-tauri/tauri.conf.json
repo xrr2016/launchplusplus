@@ -42,8 +42,12 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyQkQ4OERGRURGOTgxNzkKUldSNWdmbnQzNGk5c2thWExoSW1sWU1RMkhWMjB1dzRjYUFqalBBbytMVXdoVzNmeTdGd3dKazQK",
       "endpoints": [
-        "https://github.com/xrr2016/launchplusplus/releases/latest/download/latest.json"
-      ]
+        "https://github.com/xrr2016/launchplusplus/releases/latest/download/latest.json",
+        "https://api.upgrade.toolsetlink.com/v1/tauri/upgrade?tauriKey=K1OXgiXy_ZrIvHg_xCCCxg&versionName={{current_version}}&appointVersionName=&devModelKey=&devKey=&target={{target}}&arch={{arch}}"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }
