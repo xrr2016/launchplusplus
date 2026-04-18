@@ -4,6 +4,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
+import type { FormInst, FormItemRule, FormRules } from "naive-ui";
 import { NButton, NCard, NEmpty, NInput, NInputNumber, useMessage } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { reboot } from "tauri-plugin-power-manager-api";
@@ -43,13 +44,42 @@ async function openFileDialog(item: StartupItem) {
 const itemsStore = useItemsStore();
 const { items } = storeToRefs(itemsStore);
 
+const isShowDrawer = ref(false);
+const editingItem = ref<StartupItem>({
+  args: "",
+  delay: 3,
+  target: "",
+  type: "app",
+  name: "新启动项",
+  order: items.value.length + 1,
+});
+
+function editStartupItem(item: StartupItem) {
+  editingItem.value = item;
+  isShowDrawer.value = true;
+}
+
 function addStartupItem() {
-  itemsStore.addItem({
-    args: "",
-    delay: 3,
-    order: itemsStore.items.length + 1,
-    target: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-  });
+  isShowDrawer.value = true;
+}
+
+const formRef = ref<FormInst | null>(null);
+const rules = {
+  target: [
+    {
+      required: true,
+      type: "string",
+      message: "请添加启动项地址",
+      trigger: ["input", "blur"],
+    },
+  ],
+} satisfies FormRules;
+
+async function submitForm() {
+  await formRef.value?.validate();
+  itemsStore.addItem(editingItem.value);
+  isShowDrawer.value = false;
+  message.success("启动项已添加");
 }
 
 const startupPath =
@@ -69,7 +99,12 @@ async function useConfig() {
         if (item.delay > 0) {
           batchContent += `timeout /t ${item.delay} /nobreak > nul\n`;
         }
-        batchContent += `start "" "${item.target}" "${item.args}"\n`;
+        const target = item.target;
+        if (target.startsWith("http://") || target.startsWith("https://")) {
+          batchContent += `start "" "${target}"\n`;
+        } else {
+          batchContent += `start "" "${target}" "${item.args}"\n`;
+        }
       }
     }
     batchContent += "exit\n";
@@ -176,6 +211,10 @@ function restartComputer() {
             placeholder="启动延迟"
           />
 
+          <n-button size="tiny" quaternary type="info" @click="() => editStartupItem(item)"
+            >编辑</n-button
+          >
+
           <n-button size="tiny" quaternary type="error" @click="() => itemsStore.removeItem(index)"
             >删除</n-button
           >
@@ -202,10 +241,72 @@ function restartComputer() {
       </a>
     </div>
   </footer>
+
+  <n-drawer v-model:show="isShowDrawer" placement="bottom" :height="380">
+    <n-drawer-content title="添加启动项">
+      <n-form
+        :model="editingItem"
+        :rules="rules"
+        ref="formRef"
+        label-align="left"
+        label-width="100px"
+        label-placement="left"
+      >
+        <n-form-item label="启动项类型" prop="type">
+          <n-radio-group v-model:value="editingItem.type">
+            <n-radio label="app" value="app">程序</n-radio>
+            <n-radio label="web" value="web">网站</n-radio>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item label="启动项地址" prop="target">
+          <n-space class="w-full">
+            <n-input
+              v-model:value="editingItem.target"
+              type="text"
+              clearable
+              placeholder="请输入启动项地址"
+            />
+
+            <n-button
+              :disabled="editingItem.type === 'web'"
+              @click="() => openFileDialog(editingItem)"
+              >选择</n-button
+            >
+          </n-space>
+        </n-form-item>
+        <n-form-item label="启动参数" prop="args">
+          <n-input
+            v-model:value="editingItem.args"
+            :disabled="editingItem.type === 'web'"
+            type="text"
+            clearable
+            placeholder="启动参数"
+          />
+        </n-form-item>
+        <n-form-item label="启动延迟" prop="delay">
+          <n-input-number
+            v-model:value="editingItem.delay"
+            :min="0"
+            :max="60"
+            :step="1"
+            placeholder="启动延迟"
+          />
+        </n-form-item>
+
+        <n-form-item>
+          <n-button attr-type="button" type="primary" block @click="submitForm"> 确定 </n-button>
+        </n-form-item>
+      </n-form>
+    </n-drawer-content>
+  </n-drawer>
 </template>
 
 <style scoped></style>
 <style>
+.w-full {
+  width: 100%;
+}
+
 :root {
   width: 100vw;
   height: 100vh;

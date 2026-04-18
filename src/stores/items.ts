@@ -1,11 +1,15 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
+export type ItemType = "app" | "web";
+
 export interface StartupItem {
-  target: string;
+  name: string;
   args: string;
+  target: string;
   order: number;
   delay: number;
+  type: ItemType;
 }
 
 export const useItemsStore = defineStore("items", () => {

@@ -9,9 +9,9 @@ const appStore = useAppStore();
 const itemsStore = useItemsStore();
 
 const themeOverrides = {
-  common: {
-    primaryColor: "#276FC0FF",
-  },
+  // common: {
+  //   primaryColor: "#276FC0FF",
+  // },
 };
 
 onMounted(async () => {
